@@ -1,58 +1,90 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Teh Poci Kasir (Point of Sales & Manajemen Stok Gudang)
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Aplikasi web full-stack Point of Sales (POS) dan Manajemen Stok Gudang khusus untuk gerai waralaba **Es Teh Poci**. Aplikasi ini dikembangkan menggunakan Laravel 13, Laravel Breeze (Blade & Tailwind CSS), MySQL, dan diuji menggunakan Pest PHP.
 
-## About Laravel
+---
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## Fitur Utama
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+1. **Autentikasi Pengguna & Hak Akses (Role/Gate)**:
+   - **Owner**: Memiliki akses penuh ke Dashboard Laporan Penjualan, Manajemen Menu & Harga (CRUD), serta Manajemen Stok Gudang/Bahan Baku (CRUD).
+   - **Kasir**: Hanya memiliki akses ke Halaman Kasir / Transaksi untuk melayani pembelian.
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+2. **Manajemen Menu & Harga (CRUD)**:
+   - Pengelolaan varian rasa Es Teh Poci (Original, Jasmine, Milk Tea, dll.) disertai harga jual dan pilihan ukuran (`Medium` / `Large`).
+   - Setiap menu dapat memiliki konfigurasi resep (bahan baku apa saja yang digunakan dan seberapa banyak per cup).
 
-## Learning Laravel
+3. **Halaman Kasir / Checkout**:
+   - Grid menu interaktif dengan keranjang belanja dinamis (didukung oleh Javascript).
+   - Perhitungan kembalian otomatis saat kasir menginput jumlah uang bayar.
+   - **Database Transaction & Auto-Deduction**: Stok bahan baku di gudang otomatis terpotong saat transaksi sukses disimpan. Transaksi akan di-rollback jika ada bahan baku yang stoknya tidak mencukupi.
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+4. **Manajemen Bahan Baku / Stok Gudang (CRUD)**:
+   - Pencatatan stok bahan baku (Cup Medium, Cup Large, Sedotan, Bubuk Teh, Gula Cair, dll).
+   - **Sistem Warning/Alert**: Dashboard owner akan menampilkan notifikasi peringatan jika ada bahan baku dengan sisa stok di bawah batas minimum (`min_stock`).
 
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+5. **Dashboard & Laporan (Owner)**:
+   - Total pendapatan hari ini & bulan ini.
+   - Total volume cup terjual hari ini & bulan ini.
+   - Tabel riwayat transaksi lengkap dengan rincian item terjual.
 
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
+---
 
-## Agentic Development
+## Kredensial Akun Default (Seeded)
 
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
+Jalankan perintah database seeder untuk membuat akun berikut:
 
+* **Owner**:
+  - Email: `owner@tehpoci.com`
+  - Password: `password`
+* **Kasir**:
+  - Email: `kasir@tehpoci.com`
+  - Password: `password`
+
+---
+
+## Instalasi & Cara Menjalankan
+
+1. **Clone repository & Composer Install**:
+   ```bash
+   composer install
+   ```
+
+2. **Salin Environment file & buat Application Key**:
+   ```bash
+   copy .env.example .env
+   php artisan key:generate
+   ```
+
+3. **Migrasi Database & Seeding**:
+   Pastikan konfigurasi database di `.env` sudah benar. Kemudian jalankan:
+   ```bash
+   php artisan migrate:fresh --seed
+   ```
+
+4. **Kompilasi Aset Frontend**:
+   ```bash
+   npm install
+   npm run build
+   ```
+
+5. **Jalankan Aplikasi**:
+   ```bash
+   php artisan serve
+   ```
+   Buka `http://localhost:8000` di web browser Anda.
+
+---
+
+## Pengujian (Testing)
+
+Aplikasi ini menggunakan **Pest PHP** sebagai framework testing.
+
+Jalankan perintah berikut untuk mengeksekusi semua pengujian (termasuk tes otorisasi role dan pemotongan stok otomatis):
 ```bash
-composer require laravel/boost --dev
-
-php artisan boost:install
+php artisan test
 ```
-
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
-
-## Contributing
-
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
-
-## Code of Conduct
-
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
-
-## Security Vulnerabilities
-
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
-
-## License
-
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+atau
+```bash
+vendor/bin/pest
+```

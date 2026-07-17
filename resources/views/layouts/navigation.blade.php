@@ -12,9 +12,26 @@
 
                 <!-- Navigation Links -->
                 <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
-                    <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
-                        {{ __('Dashboard') }}
-                    </x-nav-link>
+                    @if (Auth::user()->isOwner())
+                        <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
+                            {{ __('Dashboard') }}
+                        </x-nav-link>
+                        <x-nav-link :href="route('menus.index')" :active="request()->routeIs('menus.*')">
+                            {{ __('Menu & Harga') }}
+                        </x-nav-link>
+                        <x-nav-link :href="route('inventories.index')" :active="request()->routeIs('inventories.*')">
+                            {{ __('Stok Gudang') }}
+                        </x-nav-link>
+                        <x-nav-link :href="route('checkout.history')" :active="request()->routeIs('checkout.history')">
+                            {{ __('Riwayat Penjualan') }}
+                        </x-nav-link>
+                    @endif
+
+                    @if (Auth::user()->isKasir())
+                        <x-nav-link :href="route('checkout.index')" :active="request()->routeIs('checkout.index')">
+                            {{ __('Kasir / Checkout') }}
+                        </x-nav-link>
+                    @endif
                 </div>
             </div>
 
@@ -67,9 +84,26 @@
     <!-- Responsive Navigation Menu -->
     <div :class="{'block': open, 'hidden': ! open}" class="hidden sm:hidden">
         <div class="pt-2 pb-3 space-y-1">
-            <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
-                {{ __('Dashboard') }}
-            </x-responsive-nav-link>
+            @if (Auth::user()->isOwner())
+                <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
+                    {{ __('Dashboard') }}
+                </x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('menus.index')" :active="request()->routeIs('menus.*')">
+                    {{ __('Menu & Harga') }}
+                </x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('inventories.index')" :active="request()->routeIs('inventories.*')">
+                    {{ __('Stok Gudang') }}
+                </x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('checkout.history')" :active="request()->routeIs('checkout.history')">
+                    {{ __('Riwayat Penjualan') }}
+                </x-responsive-nav-link>
+            @endif
+
+            @if (Auth::user()->isKasir())
+                <x-responsive-nav-link :href="route('checkout.index')" :active="request()->routeIs('checkout.index')">
+                    {{ __('Kasir / Checkout') }}
+                </x-responsive-nav-link>
+            @endif
         </div>
 
         <!-- Responsive Settings Options -->
