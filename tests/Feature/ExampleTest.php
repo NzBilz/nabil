@@ -5,3 +5,4 @@ it('redirects guest to login', function () {
 
     $response->assertRedirect(route('login'));
 });
+//7u6
