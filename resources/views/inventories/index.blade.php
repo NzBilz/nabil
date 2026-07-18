@@ -42,10 +42,7 @@
                                 </thead>
                                 <tbody class="bg-white divide-y divide-gray-200">
                                     @foreach ($inventories as $inv)
-                                        @php
-                                            $isLow = $inv->stock < $inv->min_stock;
-                                        @endphp
-                                        <tr class="{{ $isLow ? 'bg-red-50/50' : '' }}">
+                                        <tr class="{{ $inv->stock <= 0 ? 'bg-red-50/50' : ($inv->stock < $inv->min_stock ? 'bg-yellow-50/50' : '') }}">
                                             <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-900">{{ $inv->name }}</td>
                                             <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900 font-mono">
                                                 {{ number_format($inv->stock, 2) }}
@@ -53,12 +50,16 @@
                                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $inv->unit }}</td>
                                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 font-mono">{{ number_format($inv->min_stock, 2) }}</td>
                                             <td class="px-6 py-4 whitespace-nowrap text-sm">
-                                                @if ($isLow)
-                                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                                @if ($inv->stock <= 0)
+                                                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold bg-red-100 text-red-800 border border-red-200">
+                                                        Habis
+                                                    </span>
+                                                @elseif ($inv->stock < $inv->min_stock)
+                                                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold bg-yellow-100 text-yellow-800 border border-yellow-200">
                                                         Stok Rendah
                                                     </span>
                                                 @else
-                                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800">
+                                                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-800 border border-green-200">
                                                         Aman
                                                     </span>
                                                 @endif

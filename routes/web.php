@@ -46,6 +46,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/recipes/{menu}/edit', [RecipeController::class, 'edit'])->name('recipes.edit');
     Route::put('/recipes/{menu}', [RecipeController::class, 'update'])->name('recipes.update');
     Route::get('/transaksi', [\App\Http\Controllers\TransactionController::class, 'index'])->name('transactions.index');
+    Route::get('/api/sales-metrics-by-date', [\App\Http\Controllers\TransactionController::class, 'metricsByDate'])->name('transactions.metricsByDate');
 
     // KASIR Routes (Checkout Screen & Transaction Execution)
     Route::middleware('role.kasir')->group(function () {

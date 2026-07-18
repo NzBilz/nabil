@@ -5,6 +5,7 @@ use App\Models\Menu;
 use App\Models\Inventory;
 use App\Models\Recipe;
 use App\Models\Transaction;
+use App\Models\TransactionDetail;
 use App\Models\Purchase;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
@@ -288,4 +289,55 @@ it('supports purchases relationship with inventories', function () {
     // Check hasmany relationship
     $this->assertCount(1, $inventory->fresh()->purchases);
     $this->assertEquals(5, $inventory->fresh()->purchases->first()->quantity);
+});
+
+it('allows authenticated users to query daily sales metrics via API', function () {
+    $kasir = User::factory()->create(['role' => 'kasir']);
+
+    $today = now()->toDateString();
+    
+    // Create test transactions
+    $tx1 = Transaction::create([
+        'invoice_number' => 'TPC-TEST-0001',
+        'user_id' => $kasir->id,
+        'total_amount' => 15000,
+        'payment_amount' => 20000,
+        'change_amount' => 5000,
+        'timezone' => 'Asia/Jakarta'
+    ]);
+    
+    $tx2 = Transaction::create([
+        'invoice_number' => 'TPC-TEST-0002',
+        'user_id' => $kasir->id,
+        'total_amount' => 10000,
+        'payment_amount' => 10000,
+        'change_amount' => 0,
+        'timezone' => 'Asia/Jakarta'
+    ]);
+
+    // Add detail quantities
+    $menu = Menu::create(['name' => 'Original Poci', 'size' => 'Medium', 'price' => 5000]);
+    TransactionDetail::create([
+        'transaction_id' => $tx1->id,
+        'menu_id' => $menu->id,
+        'quantity' => 3,
+        'price' => 5000,
+        'subtotal' => 15000
+    ]);
+    TransactionDetail::create([
+        'transaction_id' => $tx2->id,
+        'menu_id' => $menu->id,
+        'quantity' => 2,
+        'price' => 5000,
+        'subtotal' => 10000
+    ]);
+
+    $response = $this->actingAs($kasir)->getJson("/api/sales-metrics-by-date?date={$today}");
+
+    $response->assertStatus(200);
+    $response->assertJson([
+        'omzet' => 25000,
+        'transaksi' => 2,
+        'cup' => 5
+    ]);
 });

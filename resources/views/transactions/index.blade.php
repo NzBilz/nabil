@@ -12,16 +12,16 @@
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <!-- Widget 1: Total Pendapatan / Omzet -->
                 <div class="bg-gradient-to-br from-emerald-500 to-teal-600 rounded-2xl shadow-md p-6 text-white relative overflow-hidden">
-                    <div class="absolute -right-4 -bottom-4 opacity-15">
+                    <div class="absolute -right-4 -bottom-4 opacity-20 text-white">
                         <svg class="h-28 w-28" fill="currentColor" viewBox="0 0 24 24">
-                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17h-2v-2h2v2zm2.07-7.75l-.9.92C13.45 12.9 13 13.5 13 15h-2v-.5c0-1.1.45-2.1 1.17-2.83l1.24-1.26c.37-.36.59-.86.59-1.41 0-1.1-.9-2-2-2s-2 .9-2 2H7c0-2.76 2.24-5 5-5s5 2.24 5 5c0 1.04-.42 1.99-1.07 2.75z"/>
+                            <path fill-rule="evenodd" d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25ZM12.75 6a.75.75 0 0 0-1.5 0v.847c-.57.067-1.127.23-1.637.476a.75.75 0 1 0 .633 1.36c.35-.163.727-.27 1.124-.316V10.5h-1.12c-1.18 0-2.072.844-2.072 1.838 0 .937.818 1.697 1.87 1.815v.847a.75.75 0 0 0 1.5 0v-.806c.642-.047 1.25-.213 1.796-.484a.75.75 0 1 0-.68-1.336c-.396.198-.838.318-1.316.35v-2.316h1.12c1.18 0 2.072-.844 2.072-1.838 0-.937-.818-1.697-1.87-1.815V6ZM10.5 12.338V11.25h.37c.394 0 .572.2.572.338 0 .148-.178.338-.572.338h-.37Zm3-3v1.088h-.37c-.394 0-.572-.2-.572-.338 0-.148.178-.338.572-.338h.37Z" clip-rule="evenodd" />
                         </svg>
                     </div>
-                    <p class="text-emerald-100 text-sm font-semibold uppercase tracking-wider">Total Pendapatan / Omzet</p>
-                    <h3 class="text-3xl font-extrabold mt-2 font-mono">
+                    <p class="text-emerald-100 text-sm font-semibold uppercase tracking-wider">Total Pendapatan</p>
+                    <h3 class="text-3xl font-extrabold mt-2 font-mono" id="display-total-omzet">
                         Rp {{ number_format($totalOmzet, 0, ',', '.') }}
                     </h3>
-                    <p class="text-xs text-emerald-100 mt-4">Akumulasi omzet dari seluruh transaksi sukses</p>
+                    <p class="text-xs text-emerald-100 mt-4" id="text-desc-omzet">Akumulasi omzet khusus hari ini</p>
                 </div>
 
                 <!-- Widget 2: Total Transaksi Berhasil -->
@@ -31,11 +31,11 @@
                             <path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/>
                         </svg>
                     </div>
-                    <p class="text-indigo-100 text-sm font-semibold uppercase tracking-wider">Transaksi Berhasil</p>
-                    <h3 class="text-3xl font-extrabold mt-2 font-mono">
-                        {{ number_format($totalTransactions, 0, ',', '.') }} <span class="text-lg font-normal">Tx</span>
+                    <p class="text-indigo-100 text-sm font-semibold uppercase tracking-wider">Transaksi</p>
+                    <h3 class="text-3xl font-extrabold mt-2 font-mono" id="display-total-tx">
+                        {{ number_format($totalTransactions, 0, ',', '.') }} Tx
                     </h3>
-                    <p class="text-xs text-indigo-100 mt-4">Jumlah pesanan selesai dicatat</p>
+                    <p class="text-xs text-indigo-100 mt-4" id="text-desc-tx">Jumlah pesanan selesai hari ini</p>
                 </div>
 
                 <!-- Widget 3: Total Cup Terjual -->
@@ -45,11 +45,19 @@
                             <path d="M2 21h18v-2H2v2zM20 8h-2V5h2v3zm-4-3v3H4v10h12V5h4c1.1 0 2-.9 2-2V3c0-1.1-.9-2-2-2H4c-1.1 0-2 .9-2 2v2h14z"/>
                         </svg>
                     </div>
-                    <p class="text-orange-100 text-sm font-semibold uppercase tracking-wider">Total Cup Terjual</p>
-                    <h3 class="text-3xl font-extrabold mt-2 font-mono">
-                        {{ number_format($totalCups, 0, ',', '.') }} <span class="text-lg font-normal">Cup</span>
+                    <p class="text-orange-100 text-sm font-semibold uppercase tracking-wider">Cup Terjual</p>
+                    <h3 class="text-3xl font-extrabold mt-2 font-mono" id="display-total-cups">
+                        {{ number_format($totalCups, 0, ',', '.') }} Cup
                     </h3>
-                    <p class="text-xs text-orange-100 mt-4">Kuantitas seluruh item menu yang terjual</p>
+                    <p class="text-xs text-orange-100 mt-4" id="text-desc-cups">Kuantitas seluruh item menu terjual hari ini</p>
+                </div>
+            </div>
+
+            <!-- Chart Container Card -->
+            <div class="bg-white overflow-hidden shadow-sm sm:rounded-2xl border border-gray-100 p-6">
+                <h3 class="text-lg font-bold text-gray-800 mb-4">Grafik Tren Pendapatan (7 Hari Terakhir)</h3>
+                <div class="w-full h-72 flex justify-center">
+                    <canvas id="salesChart" class="w-full"></canvas>
                 </div>
             </div>
 
@@ -137,4 +145,111 @@
 
         </div>
     </div>
+
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- Inisialisasi Chart.js -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const ctx = document.getElementById('salesChart').getContext('2d');
+            
+            const dates = {!! json_encode($dates) !!};
+            const fullDates = {!! json_encode($fullDates) !!};
+            const totals = {!! json_encode($totals) !!};
+ 
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: dates,
+                    datasets: [{
+                        label: 'Pendapatan Harian (Rp)',
+                        data: totals,
+                        backgroundColor: '#10b981', // Emerald green brand color
+                        borderColor: '#059669',
+                        borderWidth: 1.5,
+                        borderRadius: 8,
+                        hoverBackgroundColor: '#047857'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    onClick: (event, activeElements, chart) => {
+                        if (activeElements.length > 0) {
+                            const index = activeElements[0].index;
+                            const label = dates[index];
+                            const isoDate = fullDates[index];
+                            fetchMetricsForDate(isoDate, label);
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: '#f3f4f6'
+                            },
+                            ticks: {
+                                callback: function(value) {
+                                    return 'Rp ' + value.toLocaleString('id-ID');
+                                },
+                                font: {
+                                    family: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace',
+                                    size: 11
+                                }
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            },
+                            ticks: {
+                                font: {
+                                    weight: '600'
+                                }
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.dataset.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    if (context.parsed.y !== null) {
+                                        label += 'Rp ' + context.parsed.y.toLocaleString('id-ID');
+                                    }
+                                    return label;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            function fetchMetricsForDate(date, label) {
+                fetch(`/api/sales-metrics-by-date?date=${date}`)
+                    .then(res => res.json())
+                    .then(data => {
+                        // Update gross total
+                        document.getElementById('display-total-omzet').innerText = 'Rp ' + data.omzet.toLocaleString('id-ID');
+                        // Update transaction count
+                        document.getElementById('display-total-tx').innerText = data.transaksi.toLocaleString('id-ID') + ' Tx';
+                        // Update cup count
+                        document.getElementById('display-total-cups').innerText = data.cup.toLocaleString('id-ID') + ' Cup';
+
+                        // Update sub-text dynamically
+                        document.getElementById('text-desc-omzet').innerText = 'Data pada tanggal ' + label;
+                        document.getElementById('text-desc-tx').innerText = 'Jumlah pesanan selesai pada ' + label;
+                        document.getElementById('text-desc-cups').innerText = 'Kuantitas menu terjual pada ' + label;
+                    })
+                    .catch(err => console.error(err));
+            }
+        });
+    </script>
 </x-app-layout>
