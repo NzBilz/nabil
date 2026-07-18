@@ -27,7 +27,7 @@
                                                 <span class="px-2 py-0.5 text-xs font-semibold rounded bg-emerald-100 text-emerald-800">Selesai</span>
                                             </div>
                                             <p class="text-gray-500">
-                                                Dilayani oleh: <strong>{{ $tx->user ? $tx->user->name : 'N/A' }}</strong> pada {{ $tx->created_at->format('d/m/Y H:i') }}
+                                                Dilayani oleh: <strong>{{ $tx->user ? $tx->user->name : 'N/A' }}</strong> pada {{ $tx->created_at->timezone($tx->timezone ?? 'Asia/Jakarta')->locale('id')->translatedFormat('d M Y, H:i') }} {{ $tx->created_at->timezone($tx->timezone ?? 'Asia/Jakarta')->format('T') }}
                                             </p>
                                         </div>
                                         <div class="text-right mt-2 md:mt-0 font-mono">

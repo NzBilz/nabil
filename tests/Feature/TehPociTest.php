@@ -5,6 +5,7 @@ use App\Models\Menu;
 use App\Models\Inventory;
 use App\Models\Recipe;
 use App\Models\Transaction;
+use App\Models\Purchase;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 uses(RefreshDatabase::class);
@@ -69,6 +70,7 @@ it('deducts inventory stock automatically on checkout', function () {
         'payment_amount' => 15000,
         'change_amount' => 5000,
     ]);
+    $this->assertDatabaseCount('transaction_details', 1);
 
     // Check inventory stock decrements
     $this->assertEquals(8, $cup->fresh()->stock);       // 10 - (2 * 1)
@@ -240,4 +242,50 @@ it('allows cashier to delete a menu via AJAX on checkout', function () {
     $this->assertDatabaseMissing('menus', [
         'id' => $menu->id
     ]);
+});
+
+it('stores timezone during checkout and displays transaction time converted to stored timezone', function () {
+    $kasir = User::factory()->create(['role' => 'kasir']);
+
+    $menu = Menu::create(['name' => 'Original Poci', 'size' => 'Medium', 'price' => 5000]);
+    
+    $payload = [
+        'items' => [
+            [
+                'menu_id' => $menu->id,
+                'quantity' => 1,
+            ]
+        ],
+        'payment_amount' => 5000,
+        'timezone' => 'Asia/Makassar',
+    ];
+
+    $response = $this->actingAs($kasir)->post(route('checkout.store'), $payload);
+
+    $response->assertRedirect(route('checkout.index'));
+    $response->assertSessionHasNoErrors();
+
+    // Assert database has timezone
+    $this->assertDatabaseHas('transactions', [
+        'total_amount' => 5000,
+        'payment_amount' => 5000,
+        'timezone' => 'Asia/Makassar',
+    ]);
+});
+
+it('supports purchases relationship with inventories', function () {
+    $inventory = Inventory::create(['name' => 'Tea Leaves', 'stock' => 10, 'unit' => 'kg', 'min_stock' => 2]);
+    $purchase = Purchase::create([
+        'ingredient_id' => $inventory->id,
+        'quantity' => 5,
+        'price' => 50000
+    ]);
+
+    // Check belongsto relationship
+    $this->assertEquals($inventory->id, $purchase->ingredient->id);
+    $this->assertEquals('Tea Leaves', $purchase->ingredient->name);
+
+    // Check hasmany relationship
+    $this->assertCount(1, $inventory->fresh()->purchases);
+    $this->assertEquals(5, $inventory->fresh()->purchases->first()->quantity);
 });

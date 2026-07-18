@@ -96,7 +96,7 @@
                                             </td>
                                             <!-- Waktu -->
                                             <td class="px-6 py-4 whitespace-nowrap text-gray-600">
-                                                {{ $tx->created_at->locale('id')->translatedFormat('d M Y, H:i') }}
+                                                {{ $tx->created_at->timezone($tx->timezone ?? 'Asia/Jakarta')->locale('id')->translatedFormat('d M Y, H:i') }} {{ $tx->created_at->timezone($tx->timezone ?? 'Asia/Jakarta')->format('T') }}
                                             </td>
                                             <!-- Kasir -->
                                             <td class="px-6 py-4 whitespace-nowrap font-medium text-gray-950">

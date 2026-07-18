@@ -64,6 +64,7 @@ class CheckoutController extends Controller
                     $subtotal = $menu->price * $qty;
                     $totalAmount += $subtotal;
 
+                    $deductions = [];
                     // Check stock for each ingredient in this menu
                     foreach ($menu->recipes as $recipe) {
                         $inventory = $recipe->inventory;
@@ -76,28 +77,19 @@ class CheckoutController extends Controller
                         }
 
                         // Save deduction in array to execute later
-                        $detailsToCreate[] = [
-                            'menu' => $menu,
-                            'quantity' => $qty,
-                            'price' => $menu->price,
-                            'subtotal' => $subtotal,
-                            'deductions' => [
-                                'inventory' => $inventory,
-                                'amount' => $needed
-                            ]
+                        $deductions[] = [
+                            'inventory' => $inventory,
+                            'amount' => $needed
                         ];
                     }
 
-                    // Handle menu items with no recipe (just log, or charge normally)
-                    if ($menu->recipes->isEmpty()) {
-                        $detailsToCreate[] = [
-                            'menu' => $menu,
-                            'quantity' => $qty,
-                            'price' => $menu->price,
-                            'subtotal' => $subtotal,
-                            'deductions' => null
-                        ];
-                    }
+                    $detailsToCreate[] = [
+                        'menu_id' => $menu->id,
+                        'quantity' => $qty,
+                        'price' => $menu->price,
+                        'subtotal' => $subtotal,
+                        'deductions' => $deductions
+                    ];
                 }
 
                 // Check if payment is sufficient
@@ -129,21 +121,22 @@ class CheckoutController extends Controller
                     'total_amount' => $totalAmount,
                     'payment_amount' => $paymentAmount,
                     'change_amount' => $changeAmount,
+                    'timezone' => $request->input('timezone', 'Asia/Jakarta'),
                 ]);
 
                 // 4. Create details and apply deductions
                 foreach ($detailsToCreate as $d) {
                     TransactionDetail::create([
                         'transaction_id' => $transaction->id,
-                        'menu_id' => $d['menu']->id,
+                        'menu_id' => $d['menu_id'],
                         'quantity' => $d['quantity'],
                         'price' => $d['price'],
                         'subtotal' => $d['subtotal'],
                     ]);
 
-                    if ($d['deductions']) {
-                        $inv = $d['deductions']['inventory'];
-                        $inv->stock -= $d['deductions']['amount'];
+                    foreach ($d['deductions'] as $deduction) {
+                        $inv = $deduction['inventory'];
+                        $inv->stock -= $deduction['amount'];
                         $inv->save();
                     }
                 }

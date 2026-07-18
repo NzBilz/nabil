@@ -92,6 +92,7 @@
                     
                     <form action="{{ route('checkout.store') }}" method="POST" id="checkout-form">
                         @csrf
+                        <input type="hidden" name="timezone" id="user-timezone">
                         
                         <!-- Cart Container -->
                         <div id="cart-items" class="space-y-4 max-h-96 overflow-y-auto mb-4 pr-1">
@@ -739,4 +740,13 @@
             </form>
         </div>
     </div>
+    <!-- Timezone detector script -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const tzInput = document.getElementById('user-timezone');
+            if (tzInput) {
+                tzInput.value = Intl.DateTimeFormat().resolvedOptions().timeZone;
+            }
+        });
+    </script>
 </x-app-layout>

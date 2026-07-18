@@ -15,4 +15,9 @@ class Inventory extends Model
     {
         return $this->hasMany(Recipe::class);
     }
+
+    public function purchases()
+    {
+        return $this->hasMany(Purchase::class, 'ingredient_id');
+    }
 }
