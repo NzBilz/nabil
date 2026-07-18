@@ -5,6 +5,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\InventoryController;
 use App\Http\Controllers\MenuController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\RecipeController;
 use Illuminate\Support\Facades\Route;
 
 // Redirect logic on root URL
@@ -37,8 +38,13 @@ Route::middleware('auth')->group(function () {
     Route::middleware('role.owner')->group(function () {
         Route::get('/history', [CheckoutController::class, 'history'])->name('checkout.history');
         Route::resource('menus', MenuController::class);
-        Route::resource('inventories', InventoryController::class);
     });
+
+    // SHARED / DEMO Routes (Accessible by Owner & Kasir for assignment requirements)
+    Route::resource('inventories', InventoryController::class);
+    Route::get('/recipes', [RecipeController::class, 'index'])->name('recipes.index');
+    Route::get('/recipes/{menu}/edit', [RecipeController::class, 'edit'])->name('recipes.edit');
+    Route::put('/recipes/{menu}', [RecipeController::class, 'update'])->name('recipes.update');
 
     // KASIR Routes (Checkout Screen & Transaction Execution)
     Route::middleware('role.kasir')->group(function () {

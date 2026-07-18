@@ -16,7 +16,7 @@ it('allows owner to access owner pages and denies cashier', function () {
     // Kasir cannot access owner dashboard and management
     $this->actingAs($kasir)->get(route('dashboard'))->assertRedirect(route('checkout.index'));
     $this->actingAs($kasir)->get(route('menus.index'))->assertStatus(403);
-    $this->actingAs($kasir)->get(route('inventories.index'))->assertStatus(403);
+    $this->actingAs($kasir)->get(route('inventories.index'))->assertStatus(200);
     $this->actingAs($kasir)->get(route('checkout.history'))->assertStatus(403);
 
     // Owner can access owner dashboard and management
@@ -104,4 +104,56 @@ it('rolls back transaction and denies checkout when stock is insufficient', func
 
     // Stock should not change
     $this->assertEquals(1, $cup->fresh()->stock);
+});
+
+it('allows both owner and cashier to access and manage recipes', function () {
+    $owner = User::factory()->create(['role' => 'owner']);
+    $kasir = User::factory()->create(['role' => 'kasir']);
+
+    $menu = Menu::create(['name' => 'Original Poci', 'size' => 'Medium', 'price' => 5000]);
+    $cup = Inventory::create(['name' => 'Cup Medium', 'stock' => 10, 'unit' => 'pcs', 'min_stock' => 2]);
+
+    // Check index access
+    $this->actingAs($owner)->get(route('recipes.index'))->assertStatus(200);
+    $this->actingAs($kasir)->get(route('recipes.index'))->assertStatus(200);
+
+    // Check edit access
+    $this->actingAs($owner)->get(route('recipes.edit', $menu->id))->assertStatus(200);
+    $this->actingAs($kasir)->get(route('recipes.edit', $menu->id))->assertStatus(200);
+
+    // Update recipe via controller
+    $payload = [
+        'ingredients' => [
+            [
+                'inventory_id' => $cup->id,
+                'quantity' => 1.5,
+            ]
+        ]
+    ];
+
+    $response = $this->actingAs($kasir)->put(route('recipes.update', $menu->id), $payload);
+    $response->assertRedirect(route('recipes.index'));
+    $response->assertSessionHas('success');
+
+    // Assert pivot table was updated
+    $this->assertDatabaseHas('recipes', [
+        'menu_id' => $menu->id,
+        'inventory_id' => $cup->id,
+        'quantity' => 1.5,
+    ]);
+
+    // Verify checkout uses the new recipe quantity (1.5 cups per menu, order 2 cups = 3 cups total deduction)
+    $checkoutPayload = [
+        'items' => [
+            [
+                'menu_id' => $menu->id,
+                'quantity' => 2,
+            ]
+        ],
+        'payment_amount' => 10000,
+    ];
+
+    $checkoutResponse = $this->actingAs($kasir)->post(route('checkout.store'), $checkoutPayload);
+    $checkoutResponse->assertRedirect(route('checkout.index'));
+    $this->assertEquals(7, $cup->fresh()->stock); // 10 - (2 * 1.5) = 7
 });
