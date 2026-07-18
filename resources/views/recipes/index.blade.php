@@ -44,9 +44,15 @@
                                         <tr class="hover:bg-slate-50/50 transition">
                                             <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-slate-900">{{ $menu->name }}</td>
                                             <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-500">
-                                                <span class="px-2.5 py-0.5 text-xs font-semibold rounded-full bg-orange-100 text-orange-800">
-                                                    {{ $menu->size }}
-                                                </span>
+                                                @if ($menu->size === 'Large')
+                                                    <span class="px-2.5 py-0.5 text-xs font-semibold rounded-full bg-blue-100 text-blue-800 border border-blue-200">
+                                                        {{ $menu->size }}
+                                                    </span>
+                                                @else
+                                                    <span class="px-2.5 py-0.5 text-xs font-semibold rounded-full bg-orange-100 text-orange-800 border border-orange-200">
+                                                        {{ $menu->size }}
+                                                    </span>
+                                                @endif
                                             </td>
                                             <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-slate-900 font-mono">
                                                 Rp {{ number_format($menu->price, 0, ',', '.') }}

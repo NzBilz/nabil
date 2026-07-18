@@ -54,7 +54,10 @@
                         
                         <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
                             @foreach ($menus as $menu)
-                                <div class="relative border border-gray-200 rounded-lg p-4 flex flex-col justify-between hover:shadow-md transition bg-slate-50 cursor-pointer"
+                                @php
+                                    $isLarge = $menu->size === 'Large';
+                                @endphp
+                                <div class="relative border border-gray-200 {{ $isLarge ? 'border-t-4 border-t-blue-500 shadow-md' : 'border-t-4 border-t-orange-400 shadow-sm' }} rounded-lg p-4 flex flex-col justify-between hover:shadow-lg transition bg-slate-50 cursor-pointer"
                                      id="menu-card-{{ $menu->id }}"
                                      onclick="addToCart({{ $menu->id }}, '{{ $menu->name }}', '{{ $menu->size }}', {{ $menu->price }})">
                                     
@@ -65,15 +68,21 @@
                                             <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                                         </svg>
                                     </button>
-
+ 
                                     <div>
                                         <div class="flex justify-between items-start pr-6">
                                             <h4 class="font-bold text-gray-900 text-lg leading-tight">{{ $menu->name }}</h4>
                                         </div>
                                         <div class="mt-1">
-                                            <span class="px-2 py-0.5 text-xs font-semibold rounded-full bg-orange-100 text-orange-800">
-                                                {{ $menu->size }}
-                                            </span>
+                                            @if ($isLarge)
+                                                <span class="bg-blue-100 text-blue-800 border border-blue-200 px-2 py-0.5 rounded-md text-xs font-medium">
+                                                    {{ $menu->size }}
+                                                </span>
+                                            @else
+                                                <span class="bg-orange-100 text-orange-800 border border-orange-200 px-2 py-0.5 rounded-md text-xs font-medium">
+                                                    {{ $menu->size }}
+                                                </span>
+                                            @endif
                                         </div>
                                         <p class="text-emerald-600 font-bold mt-2">Rp {{ number_format($menu->price, 0, ',', '.') }}</p>
                                     </div>
@@ -425,13 +434,17 @@
                     // Add card to grid dynamically
                     const menuGrid = document.querySelector('.grid-cols-2');
                     const newCard = document.createElement('div');
-                    newCard.className = "relative border border-gray-200 rounded-lg p-4 flex flex-col justify-between hover:shadow-md transition bg-slate-50 cursor-pointer";
+                    const isLarge = data.menu.size === 'Large';
+                    newCard.className = `relative border border-gray-200 ${isLarge ? 'border-t-4 border-t-blue-500 shadow-md' : 'border-t-4 border-t-orange-400 shadow-sm'} rounded-lg p-4 flex flex-col justify-between hover:shadow-lg transition bg-slate-50 cursor-pointer`;
                     newCard.id = `menu-card-${data.menu.id}`;
                     newCard.onclick = function() {
                         addToCart(data.menu.id, data.menu.name, data.menu.size, data.menu.price);
                     };
 
                     const escapedName = data.menu.name.replace(/'/g, "\\'");
+                    const badgeClass = isLarge 
+                        ? 'bg-blue-100 text-blue-800 border border-blue-200 px-2 py-0.5 rounded-md text-xs font-medium'
+                        : 'bg-orange-100 text-orange-800 border border-orange-200 px-2 py-0.5 rounded-md text-xs font-medium';
 
                     newCard.innerHTML = `
                         <!-- Delete Button -->
@@ -447,7 +460,7 @@
                                 <h4 class="font-bold text-gray-900 text-lg leading-tight">${data.menu.name}</h4>
                             </div>
                             <div class="mt-1">
-                                <span class="px-2 py-0.5 text-xs font-semibold rounded-full bg-orange-100 text-orange-800">
+                                <span class="${badgeClass}">
                                     ${data.menu.size}
                                 </span>
                             </div>
