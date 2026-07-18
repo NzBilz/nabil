@@ -171,4 +171,37 @@ class CheckoutController extends Controller
 
         return view('checkout.history', compact('transactions'));
     }
+
+    /**
+     * Store a new menu dynamically (AJAX).
+     */
+    public function storeMenu(Request $request)
+    {
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'size' => 'required|in:Medium,Large',
+            'price' => 'required|numeric|min:0.01',
+        ]);
+
+        $menu = Menu::create($validated);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Menu berhasil ditambahkan!',
+            'menu' => $menu
+        ]);
+    }
+
+    /**
+     * Delete a menu dynamically (AJAX).
+     */
+    public function destroyMenu(Menu $menu)
+    {
+        $menu->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Menu berhasil dihapus!'
+        ]);
+    }
 }

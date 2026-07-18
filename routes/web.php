@@ -51,6 +51,8 @@ Route::middleware('auth')->group(function () {
     Route::middleware('role.kasir')->group(function () {
         Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout.index');
         Route::post('/checkout', [CheckoutController::class, 'store'])->name('checkout.store');
+        Route::post('/checkout/menus', [CheckoutController::class, 'storeMenu'])->name('checkout.menus.store');
+        Route::delete('/checkout/menus/{menu}', [CheckoutController::class, 'destroyMenu'])->name('checkout.menus.destroy');
     });
 });
 

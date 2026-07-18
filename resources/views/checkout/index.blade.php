@@ -42,15 +42,35 @@
                 <!-- Left: Menu Grid -->
                 <div class="lg:col-span-2 space-y-6">
                     <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6">
-                        <h3 class="text-lg font-semibold text-gray-800 mb-4">Pilih Menu Es Teh Poci</h3>
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-lg font-semibold text-gray-800">Pilih Menu Es Teh Poci</h3>
+                            <button type="button" class="bg-orange-500 hover:bg-orange-600 active:bg-orange-700 text-white px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1 shadow-sm" onclick="openAddMenuModal()">
+                                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+                                </svg>
+                                Tambah Menu Baru
+                            </button>
+                        </div>
                         
                         <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
                             @foreach ($menus as $menu)
-                                <div class="border border-gray-200 rounded-lg p-4 flex flex-col justify-between hover:shadow-md transition bg-slate-50 cursor-pointer"
+                                <div class="relative border border-gray-200 rounded-lg p-4 flex flex-col justify-between hover:shadow-md transition bg-slate-50 cursor-pointer"
+                                     id="menu-card-{{ $menu->id }}"
                                      onclick="addToCart({{ $menu->id }}, '{{ $menu->name }}', '{{ $menu->size }}', {{ $menu->price }})">
+                                    
+                                    <!-- Delete Button -->
+                                    <button type="button" class="absolute top-2 right-2 text-gray-400 hover:text-red-600 transition p-1 z-10" 
+                                            onclick="event.stopPropagation(); deleteMenu({{ $menu->id }}, '{{ addslashes($menu->name) }}')">
+                                        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                        </svg>
+                                    </button>
+
                                     <div>
-                                        <div class="flex justify-between items-start">
+                                        <div class="flex justify-between items-start pr-6">
                                             <h4 class="font-bold text-gray-900 text-lg leading-tight">{{ $menu->name }}</h4>
+                                        </div>
+                                        <div class="mt-1">
                                             <span class="px-2 py-0.5 text-xs font-semibold rounded-full bg-orange-100 text-orange-800">
                                                 {{ $menu->size }}
                                             </span>
@@ -351,6 +371,158 @@
                 calculateChange();
             }, 300);
         }
+
+        function openAddMenuModal() {
+            const modal = document.getElementById('add-menu-modal');
+            const card = document.getElementById('menu-modal-card');
+
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modal.classList.remove('opacity-0');
+                modal.classList.add('opacity-100');
+                card.classList.remove('opacity-0', 'scale-95');
+                card.classList.add('opacity-100', 'scale-100');
+                document.getElementById('menu_name').focus();
+            }, 10);
+        }
+
+        function closeAddMenuModal() {
+            const modal = document.getElementById('add-menu-modal');
+            const card = document.getElementById('menu-modal-card');
+
+            modal.classList.remove('opacity-100');
+            modal.classList.add('opacity-0');
+            card.classList.remove('opacity-100', 'scale-100');
+            card.classList.add('opacity-0', 'scale-95');
+
+            setTimeout(() => {
+                modal.classList.add('hidden');
+                document.getElementById('add-menu-form').reset();
+            }, 300);
+        }
+
+        function submitNewMenu(e) {
+            e.preventDefault();
+            
+            const name = document.getElementById('menu_name').value;
+            const size = document.getElementById('menu_size').value;
+            const price = parseFloat(document.getElementById('menu_price').value);
+
+            fetch('{{ route('checkout.menus.store') }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                body: JSON.stringify({ name, size, price })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    closeAddMenuModal();
+                    
+                    // Add card to grid dynamically
+                    const menuGrid = document.querySelector('.grid-cols-2');
+                    const newCard = document.createElement('div');
+                    newCard.className = "relative border border-gray-200 rounded-lg p-4 flex flex-col justify-between hover:shadow-md transition bg-slate-50 cursor-pointer";
+                    newCard.id = `menu-card-${data.menu.id}`;
+                    newCard.onclick = function() {
+                        addToCart(data.menu.id, data.menu.name, data.menu.size, data.menu.price);
+                    };
+
+                    const escapedName = data.menu.name.replace(/'/g, "\\'");
+
+                    newCard.innerHTML = `
+                        <!-- Delete Button -->
+                        <button type="button" class="absolute top-2 right-2 text-gray-400 hover:text-red-600 transition p-1 z-10" 
+                                onclick="event.stopPropagation(); deleteMenu(${data.menu.id}, '${escapedName}')">
+                            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                            </svg>
+                        </button>
+
+                        <div>
+                            <div class="flex justify-between items-start pr-6">
+                                <h4 class="font-bold text-gray-900 text-lg leading-tight">${data.menu.name}</h4>
+                            </div>
+                            <div class="mt-1">
+                                <span class="px-2 py-0.5 text-xs font-semibold rounded-full bg-orange-100 text-orange-800">
+                                    ${data.menu.size}
+                                </span>
+                            </div>
+                            <p class="text-emerald-600 font-bold mt-2">Rp ${data.menu.price.toLocaleString('id-ID')}</p>
+                        </div>
+                        <button class="mt-4 w-full bg-orange-500 hover:bg-orange-600 text-white py-1 px-3 rounded text-sm font-medium transition">
+                            + Tambah
+                        </button>
+                    `;
+                    menuGrid.appendChild(newCard);
+
+                    // Show SweetAlert success
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Sukses',
+                        text: data.message,
+                        timer: 1500,
+                        showConfirmButton: false
+                    });
+                } else {
+                    Swal.fire('Error', 'Gagal menyimpan menu.', 'error');
+                }
+            })
+            .catch(err => {
+                Swal.fire('Error', 'Terjadi kesalahan jaringan.', 'error');
+            });
+        }
+
+        function deleteMenu(id, name) {
+            Swal.fire({
+                title: 'Konfirmasi',
+                text: `Apakah Anda yakin ingin menghapus menu "${name}" ini?`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#ef4444',
+                cancelButtonColor: '#6b7280',
+                confirmButtonText: 'Ya, Hapus',
+                cancelButtonText: 'Batal'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    fetch(`/checkout/menus/${id}`, {
+                        method: 'DELETE',
+                        headers: {
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                        }
+                    })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.success) {
+                            // Remove card dynamically
+                            const card = document.getElementById(`menu-card-${id}`);
+                            if (card) {
+                                card.remove();
+                            }
+                            
+                            // Remove item from cart if it is there
+                            cart = cart.filter(item => item.menu_id !== id);
+                            renderCart();
+
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Terhapus',
+                                text: data.message,
+                                timer: 1500,
+                                showConfirmButton: false
+                            });
+                        } else {
+                            Swal.fire('Error', 'Gagal menghapus menu.', 'error');
+                        }
+                    })
+                    .catch(err => {
+                        Swal.fire('Error', 'Terjadi kesalahan jaringan.', 'error');
+                    });
+                }
+            });
+        }
     </script>
 
     <!-- Custom CSS for warning and success modals -->
@@ -510,4 +682,61 @@
         });
     </script>
     @endif
+
+    <!-- SweetAlert2 CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <!-- Add Menu Modal Markup -->
+    <div id="add-menu-modal" class="fixed inset-0 z-50 flex items-center justify-center hidden bg-black/60 backdrop-blur-sm transition-opacity duration-300 opacity-0">
+        <!-- Backdrop click closes modal -->
+        <div class="absolute inset-0 cursor-default" onclick="closeAddMenuModal()"></div>
+        
+        <!-- Modal Card -->
+        <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4 overflow-hidden transform scale-95 opacity-0 transition-all duration-300 ease-out border border-gray-100" id="menu-modal-card">
+            
+            <!-- Header -->
+            <div class="flex items-center justify-between p-4 border-b border-gray-100 bg-gray-50">
+                <h3 class="font-bold text-gray-800">Tambah Menu Baru</h3>
+                <button type="button" class="text-gray-400 hover:text-gray-600 transition focus:outline-none" onclick="closeAddMenuModal()">
+                    <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+            
+            <!-- Body -->
+            <form id="add-menu-form" onsubmit="submitNewMenu(event)" class="p-6 space-y-4">
+                <div>
+                    <label for="menu_name" class="block text-sm font-semibold text-gray-700 mb-1">Nama Menu</label>
+                    <input type="text" id="menu_name" required placeholder="Contoh: Jasmine Tea"
+                           class="w-full border-gray-300 focus:border-orange-500 focus:ring-orange-500 rounded-lg shadow-sm text-sm">
+                </div>
+                
+                <div>
+                    <label for="menu_size" class="block text-sm font-semibold text-gray-700 mb-1">Ukuran</label>
+                    <select id="menu_size" required
+                            class="w-full border-gray-300 focus:border-orange-500 focus:ring-orange-500 rounded-lg shadow-sm text-sm">
+                        <option value="Medium">Medium</option>
+                        <option value="Large">Large</option>
+                    </select>
+                </div>
+                
+                <div>
+                    <label for="menu_price" class="block text-sm font-semibold text-gray-700 mb-1">Harga Jual (Rp)</label>
+                    <input type="number" id="menu_price" required min="1" placeholder="Contoh: 5000"
+                           class="w-full border-gray-300 focus:border-orange-500 focus:ring-orange-500 rounded-lg shadow-sm text-sm">
+                </div>
+                
+                <!-- Footer Buttons -->
+                <div class="flex gap-3 border-t border-gray-100 pt-4 mt-6">
+                    <button type="button" class="flex-1 py-2.5 px-4 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold rounded-xl transition text-sm focus:outline-none" onclick="closeAddMenuModal()">
+                        Batal
+                    </button>
+                    <button type="submit" class="flex-1 py-2.5 px-4 bg-orange-500 hover:bg-orange-600 text-white font-bold rounded-xl transition text-sm shadow-md focus:outline-none">
+                        Simpan Menu
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
 </x-app-layout>

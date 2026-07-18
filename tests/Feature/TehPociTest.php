@@ -200,3 +200,44 @@ it('allows authenticated users to access transaksi history page', function () {
     $responseOwner = $this->actingAs($owner)->get('/transaksi');
     $responseOwner->assertStatus(200);
 });
+
+it('allows cashier to add a menu via AJAX on checkout', function () {
+    $kasir = User::factory()->create(['role' => 'kasir']);
+
+    $payload = [
+        'name' => 'Milo Dino',
+        'size' => 'Large',
+        'price' => 8000
+    ];
+
+    $response = $this->actingAs($kasir)->postJson(route('checkout.menus.store'), $payload);
+
+    $response->assertStatus(200);
+    $response->assertJson([
+        'success' => true,
+        'message' => 'Menu berhasil ditambahkan!'
+    ]);
+
+    $this->assertDatabaseHas('menus', [
+        'name' => 'Milo Dino',
+        'size' => 'Large',
+        'price' => 8000
+    ]);
+});
+
+it('allows cashier to delete a menu via AJAX on checkout', function () {
+    $kasir = User::factory()->create(['role' => 'kasir']);
+    $menu = Menu::create(['name' => 'Delete Me', 'size' => 'Medium', 'price' => 4500]);
+
+    $response = $this->actingAs($kasir)->deleteJson(route('checkout.menus.destroy', $menu->id));
+
+    $response->assertStatus(200);
+    $response->assertJson([
+        'success' => true,
+        'message' => 'Menu berhasil dihapus!'
+    ]);
+
+    $this->assertDatabaseMissing('menus', [
+        'id' => $menu->id
+    ]);
+});
