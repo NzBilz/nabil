@@ -157,3 +157,33 @@ it('allows both owner and cashier to access and manage recipes', function () {
     $checkoutResponse->assertRedirect(route('checkout.index'));
     $this->assertEquals(7, $cup->fresh()->stock); // 10 - (2 * 1.5) = 7
 });
+
+it('denies checkout when payment amount is less than total price', function () {
+    $kasir = User::factory()->create(['role' => 'kasir']);
+
+    $menu = Menu::create(['name' => 'Original Poci', 'size' => 'Medium', 'price' => 5000]);
+    $cup = Inventory::create(['name' => 'Cup Medium', 'stock' => 10, 'unit' => 'pcs', 'min_stock' => 0]);
+    Recipe::create(['menu_id' => $menu->id, 'inventory_id' => $cup->id, 'quantity' => 1]);
+
+    $payload = [
+        'items' => [
+            [
+                'menu_id' => $menu->id,
+                'quantity' => 2, // Total price = 10000
+            ]
+        ],
+        'payment_amount' => 8000, // Insufficient payment
+    ];
+
+    $response = $this->actingAs($kasir)->from(route('checkout.index'))->post(route('checkout.store'), $payload);
+
+    $response->assertRedirect(route('checkout.index'));
+    $response->assertSessionHas('error', 'Uang anda kurang!');
+
+    // Ensure no transactions were recorded
+    $this->assertDatabaseCount('transactions', 0);
+    $this->assertDatabaseCount('transaction_details', 0);
+
+    // Stock should not change
+    $this->assertEquals(10, $cup->fresh()->stock);
+});

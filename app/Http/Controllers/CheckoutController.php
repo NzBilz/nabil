@@ -33,6 +33,25 @@ class CheckoutController extends Controller
             'payment_amount' => 'required|numeric|min:0',
         ]);
 
+        // Calculate total amount from requested items
+        $total_price = 0;
+        if ($request->has('items') && is_array($request->items)) {
+            foreach ($request->items as $itemData) {
+                if (isset($itemData['menu_id']) && isset($itemData['quantity'])) {
+                    $menu = Menu::find($itemData['menu_id']);
+                    if ($menu) {
+                        $total_price += $menu->price * intval($itemData['quantity']);
+                    }
+                }
+            }
+        }
+
+        // Validate backend payment amount
+        $paymentAmount = $request->input('payment_amount', $request->input('amount_paid', 0));
+        if ($paymentAmount < $total_price) {
+            return redirect()->back()->withInput()->with('error', 'Uang anda kurang!');
+        }
+
         try {
             return DB::transaction(function () use ($request) {
                 $totalAmount = 0;

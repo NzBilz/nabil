@@ -227,25 +227,166 @@
             });
 
             const paymentInput = document.getElementById('payment_amount');
+            const changeDisplay = document.getElementById('display-change');
+            const changeContainer = changeDisplay.parentElement;
+
+            // Reset to green zero if input is empty
+            if (!paymentInput || paymentInput.value === undefined || paymentInput.value.trim() === '') {
+                changeDisplay.innerText = '0';
+                changeContainer.className = "text-xl text-green-600";
+                return;
+            }
+
             const payment = parseFloat(paymentInput.value) || 0;
             const change = payment - total;
 
-            const changeDisplay = document.getElementById('display-change');
-            const submitBtn = document.getElementById('submit-btn');
-
-            if (change >= 0 && cart.length > 0) {
-                changeDisplay.innerText = change.toLocaleString('id-ID');
-                changeDisplay.className = "text-emerald-600";
-                submitBtn.disabled = false;
-                submitBtn.className = "mt-6 w-full py-3 px-4 rounded-md text-white font-bold text-lg transition shadow-md bg-orange-500 hover:bg-orange-600 active:bg-orange-700 cursor-pointer";
+            if (change < 0) {
+                // Negative change formatting
+                changeDisplay.innerText = "-" + Math.abs(change).toLocaleString('id-ID');
+                changeContainer.className = "text-xl text-red-600";
             } else {
-                changeDisplay.innerText = '0';
-                changeDisplay.className = "text-red-500";
-                if (payment > 0 && change < 0) {
-                    submitBtn.disabled = true;
-                    submitBtn.className = "mt-6 w-full py-3 px-4 rounded-md text-white font-bold text-lg transition shadow-md bg-gray-400 cursor-not-allowed";
-                }
+                // Zero or positive change formatting
+                changeDisplay.innerText = change.toLocaleString('id-ID');
+                changeContainer.className = "text-xl text-green-600";
             }
         }
+
+        // Validate on form submission
+        document.getElementById('checkout-form').addEventListener('submit', function(e) {
+            let total = 0;
+            cart.forEach(item => {
+                total += item.price * item.quantity;
+            });
+
+            const paymentInput = document.getElementById('payment_amount');
+            const payment = parseFloat(paymentInput.value) || 0;
+
+            if (payment < total) {
+                e.preventDefault(); // Abort submit
+                openFundsModal(total, payment);
+                return false;
+            }
+        });
+
+        function openFundsModal(total, paid) {
+            const modal = document.getElementById('insufficient-funds-modal');
+            const card = document.getElementById('modal-card');
+            const icon = card.querySelector('.animate-target');
+
+            const deficit = total - paid;
+            document.getElementById('modal-total').innerText = 'Rp ' + total.toLocaleString('id-ID');
+            document.getElementById('modal-paid').innerText = 'Rp ' + paid.toLocaleString('id-ID');
+            document.getElementById('modal-deficit').innerText = 'Rp ' + deficit.toLocaleString('id-ID');
+
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modal.classList.remove('opacity-0');
+                modal.classList.add('opacity-100');
+                card.classList.remove('opacity-0', 'scale-95');
+                card.classList.add('opacity-100', 'scale-100');
+                
+                if (icon) {
+                    icon.classList.add('animate-shake');
+                    setTimeout(() => {
+                        icon.classList.remove('animate-shake');
+                    }, 600);
+                }
+            }, 10);
+        }
+
+        function closeFundsModal() {
+            const modal = document.getElementById('insufficient-funds-modal');
+            const card = document.getElementById('modal-card');
+
+            modal.classList.remove('opacity-100');
+            modal.classList.add('opacity-0');
+            card.classList.remove('opacity-100', 'scale-100');
+            card.classList.add('opacity-0', 'scale-95');
+
+            setTimeout(() => {
+                modal.classList.add('hidden');
+                const paymentInput = document.getElementById('payment_amount');
+                if (paymentInput) {
+                    paymentInput.focus();
+                    paymentInput.select();
+                }
+            }, 300);
+        }
     </script>
+
+    <!-- Custom CSS for warning modal shake keyframe -->
+    <style>
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            15%, 45%, 75% { transform: translateX(-6px); }
+            30%, 60%, 90% { transform: translateX(6px); }
+        }
+        .animate-shake {
+            animation: shake 0.6s ease-in-out;
+        }
+    </style>
+
+    <!-- Custom Warning Modal Markup -->
+    <div id="insufficient-funds-modal" class="fixed inset-0 z-50 flex items-center justify-center hidden bg-black/60 backdrop-blur-sm transition-opacity duration-300 opacity-0">
+        <!-- Backdrop click closes modal -->
+        <div class="absolute inset-0 cursor-default" onclick="closeFundsModal()"></div>
+        
+        <!-- Modal Card -->
+        <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4 overflow-hidden transform scale-95 opacity-0 transition-all duration-300 ease-out border border-gray-100" id="modal-card">
+            
+            <!-- Header -->
+            <div class="flex items-center justify-between p-4 border-b border-gray-100 bg-gray-50">
+                <img src="{{ asset('images/logo-poci.png') }}" class="h-8 w-auto object-contain" alt="Logo Es Teh Poci">
+                <button type="button" class="text-gray-400 hover:text-gray-600 transition focus:outline-none" onclick="closeFundsModal()">
+                    <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+            
+            <!-- Body -->
+            <div class="p-6 text-center space-y-4">
+                <!-- Red circle with cross icon -->
+                <div class="flex justify-center">
+                    <div class="h-20 w-20 rounded-full bg-red-100 border-4 border-red-500 flex items-center justify-center text-red-500 shadow-lg shadow-red-100/50 animate-target transition-transform duration-300">
+                        <svg class="h-10 w-10 stroke-current" fill="none" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </div>
+                </div>
+                
+                <!-- Title -->
+                <h3 class="text-2xl font-bold text-red-600 mt-4 leading-tight">
+                    Maaf, Uang Anda Kurang!
+                </h3>
+                
+                <!-- Details -->
+                <div class="bg-red-50/50 rounded-xl p-4 border border-red-100 text-left text-sm space-y-2 mt-2">
+                    <div class="flex justify-between text-gray-700">
+                        <span>Total Belanja:</span>
+                        <span class="font-bold font-mono text-gray-900" id="modal-total">Rp 0</span>
+                    </div>
+                    <div class="flex justify-between text-gray-700">
+                        <span>Uang Dibayar:</span>
+                        <span class="font-bold font-mono text-gray-900" id="modal-paid">Rp 0</span>
+                    </div>
+                    <div class="flex justify-between text-red-700 pt-2 border-t border-red-100/50">
+                        <span>Kekurangan:</span>
+                        <span class="font-bold font-mono text-red-600 text-base" id="modal-deficit">Rp 0</span>
+                    </div>
+                </div>
+                
+                <p class="text-xs text-gray-500 leading-relaxed px-4">
+                    Mohon periksa kembali nominal pembayaran Anda sebelum memproses transaksi.
+                </p>
+            </div>
+            
+            <!-- Footer Button -->
+            <div class="p-4 border-t border-gray-100 bg-gray-50 flex justify-center">
+                <button type="button" class="w-full py-3 px-4 bg-white border border-red-300 text-red-700 hover:bg-red-50 font-bold rounded-xl shadow-sm transition active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2" onclick="closeFundsModal()">
+                    Periksa Kembali
+                </button>
+            </div>
+        </div>
+    </div>
 </x-app-layout>
