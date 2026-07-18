@@ -187,3 +187,16 @@ it('denies checkout when payment amount is less than total price', function () {
     // Stock should not change
     $this->assertEquals(10, $cup->fresh()->stock);
 });
+
+it('allows authenticated users to access transaksi history page', function () {
+    $kasir = User::factory()->create(['role' => 'kasir']);
+    $owner = User::factory()->create(['role' => 'owner']);
+
+    // Check cashier access
+    $responseKasir = $this->actingAs($kasir)->get('/transaksi');
+    $responseKasir->assertStatus(200);
+
+    // Check owner access
+    $responseOwner = $this->actingAs($owner)->get('/transaksi');
+    $responseOwner->assertStatus(200);
+});

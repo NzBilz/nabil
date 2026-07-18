@@ -37,6 +37,9 @@
                     <x-nav-link :href="route('recipes.index')" :active="request()->routeIs('recipes.*')">
                         {{ __('Kelola Resep Menu') }}
                     </x-nav-link>
+                    <x-nav-link :href="route('transactions.index')" :active="request()->routeIs('transactions.*')">
+                        {{ __('Riwayat Penjualan') }}
+                    </x-nav-link>
                 </div>
             </div>
 
@@ -121,6 +124,9 @@
             </x-responsive-nav-link>
             <x-responsive-nav-link :href="route('recipes.index')" :active="request()->routeIs('recipes.*')">
                 {{ __('Kelola Resep Menu') }}
+            </x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('transactions.index')" :active="request()->routeIs('transactions.*')">
+                {{ __('Riwayat Penjualan') }}
             </x-responsive-nav-link>
         </div>
 
