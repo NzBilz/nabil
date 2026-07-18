@@ -312,9 +312,48 @@
                 }
             }, 300);
         }
+
+        function openSuccessModal(total, paid, change) {
+            const modal = document.getElementById('transaction-success-modal');
+            const card = document.getElementById('success-modal-card');
+
+            document.getElementById('success-modal-total').innerText = 'Rp ' + total.toLocaleString('id-ID');
+            document.getElementById('success-modal-paid').innerText = 'Rp ' + paid.toLocaleString('id-ID');
+            document.getElementById('success-modal-change').innerText = 'Rp ' + change.toLocaleString('id-ID');
+
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modal.classList.remove('opacity-0');
+                modal.classList.add('opacity-100');
+                card.classList.remove('opacity-0', 'scale-95');
+                card.classList.add('opacity-100', 'scale-100');
+            }, 10);
+        }
+
+        function closeSuccessModal() {
+            const modal = document.getElementById('transaction-success-modal');
+            const card = document.getElementById('success-modal-card');
+
+            modal.classList.remove('opacity-100');
+            modal.classList.add('opacity-0');
+            card.classList.remove('opacity-100', 'scale-100');
+            card.classList.add('opacity-0', 'scale-95');
+
+            setTimeout(() => {
+                modal.classList.add('hidden');
+                // Reset inputs and cart
+                cart = [];
+                renderCart();
+                const paymentInput = document.getElementById('payment_amount');
+                if (paymentInput) {
+                    paymentInput.value = '';
+                }
+                calculateChange();
+            }, 300);
+        }
     </script>
 
-    <!-- Custom CSS for warning modal shake keyframe -->
+    <!-- Custom CSS for warning and success modals -->
     <style>
         @keyframes shake {
             0%, 100% { transform: translateX(0); }
@@ -323,6 +362,21 @@
         }
         .animate-shake {
             animation: shake 0.6s ease-in-out;
+        }
+        @keyframes popIn {
+            0% { transform: scale(0.6); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        @keyframes pulseSubtle {
+            0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4); }
+            70% { transform: scale(1.05); box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); }
+            100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+        }
+        .scale-animation {
+            animation: popIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+        }
+        .pulse-animation {
+            animation: pulseSubtle 2s infinite ease-in-out;
         }
     </style>
 
@@ -389,4 +443,71 @@
             </div>
         </div>
     </div>
+
+    <!-- Custom Success Modal Markup -->
+    <div id="transaction-success-modal" class="fixed inset-0 z-50 flex items-center justify-center hidden bg-black/60 backdrop-blur-sm transition-opacity duration-300 opacity-0">
+        <!-- Backdrop click closes modal -->
+        <div class="absolute inset-0 cursor-default" onclick="closeSuccessModal()"></div>
+        
+        <!-- Modal Card -->
+        <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4 overflow-hidden transform scale-95 opacity-0 transition-all duration-300 ease-out border border-gray-100" id="success-modal-card">
+            
+            <!-- Body -->
+            <div class="p-6 text-center space-y-4 pt-10">
+                <!-- Green Circle with Checkmark Icon -->
+                <div class="flex justify-center">
+                    <div class="h-20 w-20 rounded-full bg-emerald-100 border-4 border-emerald-500 flex items-center justify-center text-emerald-500 shadow-lg shadow-emerald-100/50 scale-animation pulse-animation">
+                        <svg class="h-12 w-12 stroke-current" fill="none" viewBox="0 0 24 24" stroke-width="3">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                        </svg>
+                    </div>
+                </div>
+                
+                <!-- Title -->
+                <h3 class="text-2xl font-bold text-emerald-600 mt-4 leading-tight">
+                    Pembayaran Berhasil!
+                </h3>
+                
+                <!-- Details -->
+                <div class="bg-emerald-50/40 rounded-xl p-4 border border-emerald-100 text-left text-sm space-y-2 mt-2">
+                    <div class="flex justify-between text-gray-700">
+                        <span>Total Belanja:</span>
+                        <span class="font-bold font-mono text-gray-900" id="success-modal-total">Rp 0</span>
+                    </div>
+                    <div class="flex justify-between text-gray-700">
+                        <span>Uang Dibayar:</span>
+                        <span class="font-bold font-mono text-gray-900" id="success-modal-paid">Rp 0</span>
+                    </div>
+                    <div class="flex justify-between text-emerald-700 pt-2 border-t border-emerald-100/50">
+                        <span>Uang Kembalian:</span>
+                        <span class="font-bold font-mono text-emerald-600 text-base" id="success-modal-change">Rp 0</span>
+                    </div>
+                </div>
+                
+                <p class="text-xs text-gray-500 leading-relaxed px-4">
+                    Data transaksi telah disimpan dan stok bahan baku telah diperbarui otomatis.
+                </p>
+            </div>
+            
+            <!-- Footer Button -->
+            <div class="p-4 border-t border-gray-100 bg-gray-50 flex justify-center">
+                <button type="button" class="w-full py-3 px-4 bg-emerald-500 hover:bg-emerald-600 active:bg-emerald-700 text-white font-bold rounded-xl shadow-md transition active:scale-[0.98] focus:outline-none" onclick="closeSuccessModal()">
+                    Transaksi Baru
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Trigger Modal Sukses dari Session Laravel -->
+    @if (session('success') && session('tx_total') !== null)
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            openSuccessModal(
+                {{ session('tx_total') }},
+                {{ session('tx_paid') }},
+                {{ session('tx_change') }}
+            );
+        });
+    </script>
+    @endif
 </x-app-layout>

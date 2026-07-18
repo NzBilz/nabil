@@ -148,7 +148,12 @@ class CheckoutController extends Controller
                     }
                 }
 
-                return redirect()->route('checkout.index')->with('success', "Transaksi {$invoiceNumber} berhasil! Kembalian: Rp " . number_format($changeAmount, 0, ',', '.'));
+                return redirect()->route('checkout.index')->with([
+                    'success' => "Transaksi {$invoiceNumber} berhasil!",
+                    'tx_total' => $totalAmount,
+                    'tx_paid' => $paymentAmount,
+                    'tx_change' => $changeAmount,
+                ]);
             });
         } catch (\Exception $e) {
             return redirect()->back()->withInput()->with('error', $e->getMessage());
